@@ -10,5 +10,7 @@ public class PeopleManagementContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // Unordered...only works if order doesn't matter
+        modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
     }
 }

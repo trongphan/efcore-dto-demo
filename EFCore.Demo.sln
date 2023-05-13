@@ -15,6 +15,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.DTO.Data.MigrationDu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.DTO.Wrapper", "src\EFCore.DTO.Wrapper\EFCore.DTO.Wrapper.csproj", "{92EE5CEC-03AC-469C-B130-B5E2589B3C78}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Resources", "_Resources", "{2DC851BE-1081-4E41-97B1-B4B4F36D02E9}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		snippets\ef-core-snippets.snippet = snippets\ef-core-snippets.snippet
+		readme.md = readme.md
+	EndProjectSection
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{A9EA77AC-62AD-4B86-8D84-423DF7C0D0EC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.DTO.Wrapper.Tests", "src\EFCore.DTO.Wrapper.Tests\EFCore.DTO.Wrapper.Tests.csproj", "{FF62CDFF-1848-47CC-A344-B0946BB9F3E3}"

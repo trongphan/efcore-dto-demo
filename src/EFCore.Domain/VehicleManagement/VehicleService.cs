@@ -1,32 +1,130 @@
-﻿using EFCore.Domain.Infrastructure;
+﻿using EFCore.Domain.VehicleManagement;
+using EFCore.Domain.Infrastructure;
+using EFCore.Domain.VehicleManagement.Data;
 using EFCore.Domain.VehicleManagement.DTOs;
+using EFCore.Domain.VehicleManagement.Exceptions;
 
 namespace EFCore.Domain;
 
 public class VehicleService
 {
+    private readonly VehicleManagementContext context;
+
+    public VehicleService(VehicleManagementContext context)
+    {
+        this.context = context;
+    }
+
     public async Task<ServiceResult<VehicleDTO>> AddVehicle(string vin, int personId)
     {
-        throw new NotImplementedException();
+        if (string.IsNullOrWhiteSpace(vin))
+        {
+            return ServiceResult.Fail<VehicleDTO>(new ArgumentNullException(nameof(vin)));
+        }
+
+        if (!VIN.IsValid(vin))
+        {
+            return ServiceResult.Fail<VehicleDTO>(new InvalidVinException());
+        }
+
+        var existing = await context.VehicleWithVIN(VIN.Create(vin));
+        if (existing != null)
+        {
+            return ServiceResult.Fail<VehicleDTO>(new DuplicateVinException());
+        }
+
+        var owner = await context.PersonWithId(personId);
+        if (owner == null)
+        {
+            return ServiceResult.Fail<VehicleDTO>(new PersonNotFoundException());
+        }
+
+        try
+        {
+            var vehicle = Vehicle.Create(vin, owner);
+            context.Add(vehicle);
+            await context.SaveChangesAsync();
+            return ServiceResult.Success(vehicle.ToModel());
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult.Fail<VehicleDTO>(ex);
+        }
     }
 
     public async Task<ServiceResult<VehicleDTO>> GetVehicleByVin(string vin)
     {
-        throw new NotImplementedException();
+        if (!VIN.IsValid(vin))
+        {
+            return ServiceResult.Fail<VehicleDTO>(new InvalidVinException());
+        }
+
+        var vehicle = await context.VehicleWithVIN(VIN.Create(vin), true);
+
+        return vehicle != null ?
+                    ServiceResult.Success(vehicle.ToModel()) :
+                    ServiceResult.Fail<VehicleDTO>(new VehicleNotFoundException());
     }
 
     public async Task<ServiceResult<VehicleDTO>> GetVehicleById(int id)
     {
-        throw new NotImplementedException();
+        var vehicle = await context.VehicleWithId(id, true);
+
+        return vehicle != null ?
+                    ServiceResult.Success(vehicle.ToModel()) :
+                    ServiceResult.Fail<VehicleDTO>(new VehicleNotFoundException());
     }
 
     public async Task<ServiceResult<OwnerDTO>> GetCurrentOwnerByVin(string vin)
     {
-        throw new NotImplementedException();
+        if (!VIN.IsValid(vin))
+        {
+            return ServiceResult.Fail<OwnerDTO>(new InvalidVinException());
+        }
+
+        var vehicle = await context.VehicleWithVIN(VIN.Create(vin), true);
+        if (vehicle == null)
+        {
+            return ServiceResult.Fail<OwnerDTO>(new VehicleNotFoundException());
+        }
+
+        if (vehicle.CurrentOwner == null)
+        {
+            return ServiceResult.Fail<OwnerDTO>(new OwnerNotFoundException());
+        }
+
+        return ServiceResult.Success(vehicle.CurrentOwner.ToModel());
     }
 
     public async Task<ServiceResult<OwnerDTO>> SetCurrentOwner(string vin, int personId)
     {
-        throw new NotImplementedException();
+        if (!VIN.IsValid(vin))
+        {
+            return ServiceResult.Fail<OwnerDTO>(new InvalidVinException());
+        }
+
+        var vehicle = await context.VehicleWithVIN(VIN.Create(vin));
+        if (vehicle == null)
+        {
+            return ServiceResult.Fail<OwnerDTO>(new VehicleNotFoundException());
+        }
+        
+        var newOwner = await context.PersonWithId(personId);
+        if (newOwner == null)
+        {
+            return ServiceResult.Fail<OwnerDTO>(new PersonNotFoundException());
+        }
+
+        try
+        {
+            vehicle.SetOwner(newOwner);
+            await context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult.Fail<OwnerDTO>(ex);
+        }
+
+        return ServiceResult.Success(vehicle.CurrentOwner!.ToModel());
     }
 }
