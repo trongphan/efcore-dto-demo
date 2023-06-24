@@ -1,3 +1,5 @@
+# Use the domain class wrap the efcore data model class approach, using static method, public to validate
+
 # Demo code for the "Stop using Entity Framework as a DTO provider!" talk
 
 This repo contains the code used for the demos in my talk "Stop using Entity Framework as a DTO provider!". 
